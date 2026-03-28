@@ -1,0 +1,148 @@
+.flight-card {
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.flight-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(67, 97, 238, 0.1);
+}
+
+.flight-card--badge {
+  border: 2px solid var(--color-primary);
+  background: var(--color-primary-bg);
+}
+
+.flight-badge {
+  position: absolute;
+  top: -7px;
+  right: 10px;
+  color: #fff;
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.flight-badge--best-value {
+  background: var(--color-primary);
+}
+
+.flight-badge--premium {
+  background: var(--color-text);
+}
+
+.flight-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flight-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.flight-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.flight-airline {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.flight-meta {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  margin-top: 1px;
+}
+
+.flight-price-block {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.flight-price {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.flight-price--highlight {
+  color: var(--color-primary);
+}
+
+.flight-currency {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+/* Timeline bar */
+.flight-timeline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-light);
+  font-size: 12px;
+}
+
+.flight-card--badge .flight-timeline {
+  border-top-color: #e0e0ff;
+}
+
+.flight-time {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.flight-line {
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+  position: relative;
+}
+
+.flight-card--badge .flight-line {
+  background: #c7d2fe;
+}
+
+.flight-duration {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  padding: 0 6px;
+  white-space: nowrap;
+}
+
+.flight-card--badge .flight-duration {
+  background: var(--color-primary-bg);
+}
+
+.flight-source {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  margin-top: 6px;
+  text-align: right;
+}
+
+.flight-card--badge .flight-source {
+  color: var(--color-primary);
+}

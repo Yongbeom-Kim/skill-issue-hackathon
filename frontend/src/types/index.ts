@@ -178,9 +178,25 @@ export interface ChatMessage {
   timestamp: number
 }
 
+// ── User Actions (FE → LangChain) ─────────────────────────
+// Actions the frontend can send to the orchestrator.
+
+export type UserAction =
+  | { type: "chat"; message: string }
+  | { type: "select_node"; nodeId: string }
+  | { type: "decide"; nodeId: string; optionId: string }
+  | { type: "revise"; nodeId: string; feedback: string }
+
+// ── Orchestrator Callbacks (LangChain → FE) ───────────────
+// Callbacks the frontend passes into the orchestrator so it can update UI.
+
+export interface OrchestratorCallbacks {
+  onUpdateDecisionTree: (input: UpdateDecisionTreeInput) => void
+  onUpdateRealtimeView: (input: UpdateRealtimeViewInput) => void
+}
+
 // ── Tool Inputs ────────────────────────────────────────────
 // The orchestrator calls these 2 tools to update the frontend.
-// Frontend NEVER modifies atoms directly.
 
 /** Input for update_decision_tree — modifies left panel (tripPlanAtom) */
 export interface UpdateDecisionTreeInput {

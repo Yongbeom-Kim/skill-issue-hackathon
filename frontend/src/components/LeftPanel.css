@@ -1,0 +1,77 @@
+.lp-header {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.lp-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.lp-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-top: 4px;
+}
+
+.lp-subtitle {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+}
+
+/* Budget section */
+.lp-budget {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-primary-bg);
+}
+
+.lp-budget-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.lp-budget-amount {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.lp-budget-track {
+  background: var(--color-border);
+  height: 6px;
+  border-radius: 3px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.lp-budget-fill {
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  height: 6px;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.lp-budget-detail {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  margin-top: 3px;
+}
+
+.lp-budget-remaining {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Tree container */
+.lp-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+}

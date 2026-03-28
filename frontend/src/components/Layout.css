@@ -1,0 +1,33 @@
+.layout {
+  display: flex;
+  height: 100vh;
+  background: var(--color-bg-secondary);
+}
+
+.layout-left {
+  width: 260px;
+  min-width: 260px;
+  background: var(--color-bg);
+  border-right: 2px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.layout-middle {
+  flex: 1;
+  background: var(--color-bg);
+  border-right: 2px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.layout-right {
+  width: 380px;
+  min-width: 380px;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

@@ -1,0 +1,101 @@
+.agent-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-bg);
+}
+
+.agent-row--done {
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+}
+
+.agent-row--failed {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.agent-row--queued {
+  background: var(--color-bg-input);
+}
+
+.agent-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid var(--color-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+.agent-queued-dot {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.agent-queued-dot::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: var(--color-text-light);
+  border-radius: 50%;
+}
+
+.agent-done {
+  font-size: 14px;
+  color: var(--color-success);
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.agent-failed {
+  font-size: 14px;
+  color: #ef4444;
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.agent-logo {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.agent-info {
+  min-width: 0;
+}
+
+.agent-name {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 13px;
+}
+
+.agent-message {
+  font-size: 11px;
+  margin-top: 1px;
+  color: var(--color-primary);
+}
+
+.agent-message--done {
+  color: var(--color-success);
+}
+
+.agent-message--failed {
+  color: #ef4444;
+}
+
+.agent-message--queued {
+  color: var(--color-text-muted);
+}

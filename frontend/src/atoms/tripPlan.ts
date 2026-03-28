@@ -1,6 +1,6 @@
 // frontend/src/atoms/tripPlan.ts
 import { atom } from "jotai"
-import type { TripPlan, TripNode, NodeStatus, UserRequirements } from "../types"
+import type { TripPlan, TripNode, NodeStatus } from "../types"
 
 export const tripPlanAtom = atom<TripPlan>({
   id: crypto.randomUUID(),
