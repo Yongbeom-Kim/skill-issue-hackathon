@@ -1,6 +1,7 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { DynamicStructuredTool } from "@langchain/core/tools";
+import type { StructuredToolInterface } from "@langchain/core/tools";
 import { z } from "zod";
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
@@ -93,23 +94,36 @@ const tinyfishRunTool = new DynamicStructuredTool({
   },
 });
 
-const llm = new ChatOpenAI({
-  model: "gpt-4o",
-  apiKey: OPENAI_API_KEY,
-});
+interface CreateAgentOptions {
+  prompt?: string;
+  tools?: StructuredToolInterface[];
+}
 
-export const tinyfishAgent = createReactAgent({
-  llm,
-  tools: [tinyfishRunTool],
-});
+export function createTinyfishAgent(options: CreateAgentOptions = {}) {
+  const { prompt, tools = [] } = options;
 
-export async function runTinyfishAgent(userMessage: string) {
-  const result = await tinyfishAgent.invoke({
-    messages: [{ role: "user", content: userMessage }],
+  const llm = new ChatOpenAI({
+    model: "gpt-4o",
+    apiKey: OPENAI_API_KEY,
   });
 
-  const lastMessage = result.messages[result.messages.length - 1];
-  return typeof lastMessage.content === "string"
-    ? lastMessage.content
-    : JSON.stringify(lastMessage.content);
+  const agent = createReactAgent({
+    llm,
+    tools: [tinyfishRunTool, ...tools],
+    ...(prompt ? { prompt } : {}),
+  });
+
+  return async (userMessage: string) => {
+    const result = await agent.invoke({
+      messages: [{ role: "user", content: userMessage }],
+    });
+
+    const lastMessage = result.messages[result.messages.length - 1];
+    return typeof lastMessage.content === "string"
+      ? lastMessage.content
+      : JSON.stringify(lastMessage.content);
+  };
 }
+
+// Default agent for backwards compatibility
+export const runTinyfishAgent = createTinyfishAgent();
