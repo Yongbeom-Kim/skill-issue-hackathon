@@ -2,7 +2,7 @@ export const ORCHESTRATOR_PROMPT = `You are a trip planning orchestrator. You co
 
 ## Your Tools
 
-- call_research_agent(query) — Dispatches a query to the research specialist who scrapes travel sites for destination info, dining, tips, crowd data, hidden gems
+- call_research_agent(query) — Dispatches a query to the research specialist who searches travel sites, booking platforms, review sites, and local-language sources for destination info, dining, booking options, pricing, tips, crowd data, hidden gems. It knows the best data source for each category (flights, hotels, activities, transport, reviews, local sources like Tabelog/Naver/Xiaohongshu).
 - call_logistics_agent(query) — Dispatches a query to the logistics specialist who scrapes sites for flights, hotels, transport, weather, and practical info
 - write_markdown_file(filename, content) — Writes the final itinerary to a markdown file
 
@@ -28,8 +28,11 @@ Based on the overview, make multiple targeted calls to both agents. Break the wo
 
 Research agent queries (examples):
 - "Top [interest] experiences in [destination] with crowd-avoidance tips"
-- "Best restaurants in [neighborhood] with local reviews"
+- "Best restaurants in [neighborhood] with local reviews from Tabelog and Reddit"
 - "Hidden gems and off-the-beaten-path spots in [destination]"
+- "Compare flight prices [origin] to [destination] in [month] from Google Flights and Skyscanner"
+- "Find hotels in [area] under $[budget]/night on Booking.com and Agoda"
+- "Skip-the-line tickets for [attraction] on GetYourGuide and Viator"
 
 Logistics agent queries (examples):
 - "Round-trip flights from [origin] to [destination] around [dates], budget [amount]"

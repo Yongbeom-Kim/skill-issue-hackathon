@@ -1,28 +1,31 @@
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
 import { createTinyfishAgent } from "./agent-factory";
-import { RESEARCH_PROMPT } from "./prompts/research-agent";
+import { createResearchAgent } from "./research-agent";
 import { LOGISTICS_PROMPT } from "./prompts/logistics-agent";
 import { ORCHESTRATOR_PROMPT } from "./prompts/orchestrator-agent";
 import { writeFile, mkdir } from "fs/promises";
 
 export function createTripPlannerOrchestrator() {
-  const researchRunner = createTinyfishAgent({ prompt: RESEARCH_PROMPT });
+  const researchRunner = createResearchAgent();
   const logisticsRunner = createTinyfishAgent({ prompt: LOGISTICS_PROMPT });
 
   const callResearchAgent = new DynamicStructuredTool({
     name: "call_research_agent",
     description:
       "Dispatch a query to the travel research agent. " +
-      "The research agent scrapes travel websites (WikiVoyage, Reddit, Google Maps, Tabelog, etc.) " +
-      "to gather destination info, dining recommendations, tips, crowd data, and hidden gems. " +
+      "The research agent searches travel websites, booking platforms, review sites, and local-language sources " +
+      "(Tabelog, Naver, Xiaohongshu) to gather destination info, dining recommendations, booking options, " +
+      "pricing data, tips, crowd data, and hidden gems. " +
+      "It knows the best data source for each category (flights, hotels, activities, transport, reviews). " +
       "Send specific, targeted queries for best results.",
     schema: z.object({
       query: z
         .string()
         .describe(
           "The research query to send to the agent. Be specific — e.g. " +
-            "'Find top-rated ramen shops in Shinjuku with crowd-avoidance tips from Reddit and Tabelog'"
+            "'Find top-rated ramen shops in Shinjuku with crowd-avoidance tips from Reddit and Tabelog' or " +
+            "'Compare flight prices SFO to NRT in April from Google Flights and Skyscanner'"
         ),
     }),
     func: async ({ query }) => {
