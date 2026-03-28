@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { runTinyfishAgent } from "./tinyfish-agent";
+import { runTinyfishAgent } from ".";
 
 describe("tinyfish agent integration", () => {
   it("extracts data from a webpage via tinyfish", {
