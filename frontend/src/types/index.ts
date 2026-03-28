@@ -73,7 +73,7 @@ export interface AgentStatus {
   name: string
   /** Website being scraped, e.g. "singaporeair.com" */
   site: string
-  status: "running" | "done" | "failed"
+  status: "queued" | "running" | "done" | "failed"
   /** Progress message, e.g. "Navigating booking engine..." */
   message: string
   /** Number of results found (when done) */
