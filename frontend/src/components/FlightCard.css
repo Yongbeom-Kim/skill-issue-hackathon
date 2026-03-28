@@ -89,40 +89,69 @@
   color: var(--color-text-muted);
 }
 
+/* Route & date row */
+.flight-route {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 8px;
+}
+
 /* Timeline bar */
 .flight-timeline {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 10px;
-  padding-top: 8px;
+  padding-top: 10px;
   border-top: 1px solid var(--color-border-light);
-  font-size: 12px;
 }
 
 .flight-card--badge .flight-timeline {
   border-top-color: var(--color-border);
 }
 
+.flight-time-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.flight-time-block--end {
+  text-align: right;
+}
+
 .flight-time {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 15px;
   color: var(--color-text);
+  line-height: 1;
+}
+
+.flight-time-label {
+  font-size: 9px;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .flight-line {
   flex: 1;
-  height: 1px;
-  background: #ddd;
+  height: 2px;
+  background: var(--color-border);
   position: relative;
+  border-radius: 1px;
 }
 
 .flight-card--badge .flight-line {
-  background: var(--color-border);
+  background: var(--color-accent);
+  opacity: 0.3;
 }
 
 .flight-duration {
   position: absolute;
-  top: -6px;
+  top: -7px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 9px;
@@ -136,13 +165,57 @@
   background: var(--color-primary-bg);
 }
 
+.flight-stop-dot {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-text-muted);
+  border-radius: 50%;
+  margin-top: 10px;
+}
+
+/* Stops detail */
+.flight-stops-detail {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* Footer with source + book link */
+.flight-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-light);
+}
+
 .flight-source {
   font-size: 10px;
   color: var(--color-text-muted);
-  margin-top: 6px;
-  text-align: right;
 }
 
 .flight-card--badge .flight-source {
   color: var(--color-accent);
+}
+
+.flight-book {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--color-primary-bg);
+  transition: background 0.15s;
+}
+
+.flight-book:hover {
+  background: var(--color-border);
 }

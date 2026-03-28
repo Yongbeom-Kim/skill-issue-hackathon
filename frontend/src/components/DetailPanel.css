@@ -143,9 +143,18 @@
   gap: 6px;
 }
 
+.dp-price-logo,
+.dp-link-logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  border: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+}
+
 .dp-price-card {
   display: flex;
-  justify-content: space-between;
+  gap: 10px;
   align-items: center;
   padding: 10px 14px;
   background: var(--color-bg-input);
@@ -162,6 +171,7 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text);
+  flex: 1;
 }
 
 .dp-price-amount {
@@ -192,11 +202,12 @@
 
 .dp-link-top {
   display: flex;
-  justify-content: space-between;
+  gap: 10px;
   align-items: center;
 }
 
 .dp-link-provider {
+  flex: 1;
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text);
@@ -212,6 +223,7 @@
   font-size: 11px;
   color: var(--color-text-muted);
   margin-top: 3px;
+  padding-left: 28px;
 }
 
 /* Community quotes */
@@ -286,4 +298,187 @@
 
 .dp-btn-select:hover {
   opacity: 0.85;
+}
+
+/* Flight detail styles */
+.dp-flight-route {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.dp-flight-timeline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--color-primary-bg);
+  border-radius: var(--radius-lg);
+}
+
+.dp-flight-endpoint {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dp-flight-endpoint--end {
+  text-align: right;
+}
+
+.dp-flight-time {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.dp-flight-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dp-flight-line {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.dp-flight-line::before {
+  content: "";
+  width: 100%;
+  height: 2px;
+  background: var(--color-border);
+  border-radius: 1px;
+}
+
+.dp-flight-duration {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.dp-flight-stop-dot {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-text-muted);
+  border-radius: 50%;
+}
+
+.dp-flight-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--color-border-light);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.dp-flight-detail {
+  padding: 10px 14px;
+  background: var(--color-bg);
+}
+
+.dp-flight-detail-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.dp-flight-detail-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.dp-flight-book {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+  border: 1.5px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  transition: background 0.15s;
+}
+
+.dp-flight-book:hover {
+  background: var(--color-primary-bg);
+}
+
+/* Timing insight */
+.dp-flight-insight {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--color-primary-bg);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-accent);
+}
+
+.dp-flight-insight-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.dp-flight-insight-text {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* Price context */
+.dp-flight-price-context {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.dp-flight-price-source {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+}
+
+.dp-flight-price-site {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  flex: 1;
+}
+
+.dp-flight-price-live {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-accent);
+}
+
+.dp-flight-price-note {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  padding: 8px 14px;
+  background: var(--color-primary-bg);
+  border-top: 1px solid var(--color-border-light);
 }

@@ -40,27 +40,52 @@ export function useCachedOrchestrator() {
 
         setIsRunning(true);
         setActivity([
-          { id: "a1", timestamp: Date.now(), source: "orchestrator", type: "thinking", message: "Processing your message..." },
+          { id: "a1", timestamp: Date.now(), source: "orchestrator", type: "thinking", message: "Understanding your trip requirements..." },
         ]);
 
-        await delay(400);
+        await delay(1500);
         setActivity((prev) => [
           ...prev,
-          { id: "a2", timestamp: Date.now(), source: "orchestrator", type: "tool_call", message: "Setting trip requirements" },
+          { id: "a2", timestamp: Date.now(), source: "orchestrator", type: "tool_call", message: "Researching destinations and routing..." },
         ]);
 
-        await delay(300);
+        await delay(2000);
+        setActivity((prev) => [
+          ...prev,
+          { id: "a3", timestamp: Date.now(), source: "research", type: "thinking", message: "Searching XHS and Reddit for community tips..." },
+        ]);
+
+        await delay(2500);
+        setActivity((prev) => [
+          ...prev,
+          { id: "a4", timestamp: Date.now(), source: "orchestrator", type: "tool_call", message: "Building your trip plan..." },
+        ]);
+
+        await delay(1000);
         setTripPlan(cachedTripPlan);
 
         setActivity((prev) => [
           ...prev,
-          { id: "a3", timestamp: Date.now(), source: "orchestrator", type: "tool_result", message: "Decision tree updated" },
+          { id: "a5", timestamp: Date.now(), source: "orchestrator", type: "tool_result", message: "Decision tree updated" },
         ]);
 
-        await delay(200);
+        await delay(1500);
+        setActivity((prev) => [
+          ...prev,
+          { id: "a6", timestamp: Date.now(), source: "logistics", type: "thinking", message: "Scraping live flight prices from airline sites..." },
+        ]);
+
+        await delay(2000);
 
         // Show first node view (flights)
         setLiveView(cachedNodeViews["flight-out"]);
+
+        setActivity((prev) => [
+          ...prev,
+          { id: "a7", timestamp: Date.now(), source: "orchestrator", type: "tool_result", message: "Found flights — presenting options" },
+        ]);
+
+        await delay(500);
 
         // Add chat response
         setChatMessages((prev) => [...prev, ...cachedChatMessages]);
@@ -90,14 +115,84 @@ export function useCachedOrchestrator() {
         return;
       }
 
-      // ── Node selection: instant from cache ──
+      // ── Node selection: simulate scraping then show results ──
       if (action.type === "select_node" && action.nodeId) {
         const view = cachedNodeViews[action.nodeId];
-        if (view) {
-          setLiveView(view);
-        } else {
+        if (!view) {
           console.log("[cached] no view for node:", action.nodeId);
+          return;
         }
+
+        setIsRunning(true);
+
+        // Determine what kind of agents to show
+        const isFlight = view.phase === "flights"
+        const isHotel = view.phase === "hotels"
+        const agents = isFlight
+          ? [
+              { id: "s1", name: "Scoot", site: "flyscoot.com", status: "running" as const, message: "Searching flights..." },
+              { id: "s2", name: "Jetstar", site: "jetstar.com", status: "queued" as const, message: "Waiting..." },
+              { id: "s3", name: "Singapore Airlines", site: "singaporeair.com", status: "queued" as const, message: "Waiting..." },
+              { id: "s4", name: "AirAsia", site: "airasia.com", status: "queued" as const, message: "Waiting..." },
+            ]
+          : isHotel
+            ? [
+                { id: "s1", name: "Booking.com", site: "booking.com", status: "running" as const, message: "Searching hotels..." },
+                { id: "s2", name: "Agoda", site: "agoda.com", status: "queued" as const, message: "Waiting..." },
+                { id: "s3", name: "Expedia", site: "expedia.com", status: "queued" as const, message: "Waiting..." },
+              ]
+            : [
+                { id: "s1", name: "Xiaohongshu", site: "xiaohongshu.com", status: "running" as const, message: "Searching posts..." },
+                { id: "s2", name: "Reddit", site: "reddit.com", status: "queued" as const, message: "Waiting..." },
+                { id: "s3", name: "TripAdvisor", site: "tripadvisor.com", status: "queued" as const, message: "Waiting..." },
+              ]
+
+        // Show loading state
+        setLiveView({
+          nodeId: action.nodeId,
+          phase: "loading",
+          agents,
+          flights: [], hotels: [], discoveries: [],
+          decidedItem: null,
+          title: view.title,
+          subtitle: "Searching...",
+        })
+
+        // Simulate agents completing one by one
+        await delay(1200)
+        setLiveView((prev) => ({
+          ...prev,
+          agents: prev.agents.map((a, i) =>
+            i === 0 ? { ...a, status: "done" as const, message: `Found results`, resultCount: 2 }
+            : i === 1 ? { ...a, status: "running" as const, message: "Navigating booking engine..." }
+            : a
+          ),
+        }))
+
+        await delay(1500)
+        setLiveView((prev) => ({
+          ...prev,
+          agents: prev.agents.map((a, i) =>
+            i === 1 ? { ...a, status: "done" as const, message: `Found results`, resultCount: 3 }
+            : i === 2 ? { ...a, status: "running" as const, message: "Extracting prices..." }
+            : a
+          ),
+        }))
+
+        await delay(1800)
+        setLiveView((prev) => ({
+          ...prev,
+          agents: prev.agents.map((a, i) =>
+            i >= 2 ? { ...a, status: "done" as const, message: `Found results`, resultCount: i === 2 ? 2 : 1 }
+            : a
+          ),
+        }))
+
+        await delay(800)
+
+        // Show actual results
+        setLiveView(view)
+        setIsRunning(false)
         return;
       }
 

@@ -43,18 +43,54 @@ export function FlightCard({ flight, onSelect }: FlightCardProps) {
         </div>
       </div>
 
-      <div className="flight-timeline">
-        <span className="flight-time">{flight.departure}</span>
-        <span className="flight-line">
-          <span className="flight-duration">
-            {flight.duration}{flight.stops === 0 ? " nonstop" : ` · ${flight.stops} stop`}
-          </span>
-        </span>
-        <span className="flight-time">{flight.arrival}</span>
+      {/* Route & date */}
+      <div className="flight-route">
+        <span>{flight.route}</span>
+        <span>&middot;</span>
+        <span>{flight.date}</span>
       </div>
 
-      <div className="flight-source">
-        Live price from {flight.source}
+      <div className="flight-timeline">
+        <div className="flight-time-block">
+          <span className="flight-time">{flight.departure}</span>
+          <span className="flight-time-label">Depart</span>
+        </div>
+        <span className="flight-line">
+          <span className="flight-duration">
+            {flight.duration}
+          </span>
+          {flight.stops > 0 && (
+            <span className="flight-stop-dot" />
+          )}
+        </span>
+        <div className="flight-time-block flight-time-block--end">
+          <span className="flight-time">{flight.arrival}</span>
+          <span className="flight-time-label">Arrive</span>
+        </div>
+      </div>
+
+      {/* Stops detail */}
+      {flight.stops > 0 && flight.stopCity && (
+        <div className="flight-stops-detail">
+          {flight.stops} stop in {flight.stopCity}
+        </div>
+      )}
+
+      <div className="flight-footer">
+        <div className="flight-source">
+          Live price from {flight.source}
+        </div>
+        {flight.sourceUrl && (
+          <a
+            className="flight-book"
+            href={flight.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Book &rarr;
+          </a>
+        )}
       </div>
     </div>
   )
