@@ -8,6 +8,35 @@ const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 const TINYFISH_API_KEY = import.meta.env.VITE_TINYFISH_API_KEY;
 const TINYFISH_BASE_URL = "https://agent.tinyfish.ai/v1";
 
+/**
+ * Domains that require stealth browser_profile due to anti-bot protection,
+ * heavy JS rendering, or login walls. Single source of truth.
+ */
+export const STEALTH_DOMAINS = [
+  // Social media (heavy JS, anti-bot, login walls)
+  "reddit.com",
+  "tiktok.com",
+  "xiaohongshu.com",
+  "instagram.com",
+  // Flights (Cloudflare, DataDome, bot detection)
+  "google.com/travel/flights",
+  "kayak.com",
+  "delta.com",
+  "united.com",
+  "southwest.com",
+  "ryanair.com",
+  "aa.com",
+  // Accommodation (React SPAs, anti-bot)
+  "airbnb.com",
+  "booking.com",
+  "rakuten.co.jp",
+  "jalan.net",
+  // Local/regional (login-gated, geo-restricted)
+  "tabelog.com",
+  "blog.naver.com",
+  "map.naver.com",
+] as const;
+
 const webSearchTool = new DynamicStructuredTool({
   name: "web_search",
   description:
@@ -115,7 +144,11 @@ const tinyfishRunTool = new DynamicStructuredTool({
   description:
     "Run a browser automation task using TinyFish. Send a URL and a natural-language goal, " +
     "and get back structured JSON extracted from the page. Handles real browser navigation, " +
-    "form filling, dynamic content, and anti-bot detection.",
+    "form filling, dynamic content, and anti-bot detection. " +
+    "IMPORTANT: Use browser_profile='stealth' for these domains (they have anti-bot/JS walls): " +
+    "reddit.com, tiktok.com, xiaohongshu.com, instagram.com, google.com/travel/flights, " +
+    "kayak.com, airbnb.com, booking.com, airline sites (delta.com, united.com, southwest.com, " +
+    "ryanair.com, aa.com), rakuten.co.jp, jalan.net, tabelog.com, blog.naver.com, map.naver.com.",
   schema: z.object({
     url: z.string().describe("The starting URL for the browser agent"),
     goal: z
@@ -129,7 +162,9 @@ const tinyfishRunTool = new DynamicStructuredTool({
       .optional()
       .default("lite")
       .describe(
-        "Browser mode. Use 'stealth' for sites with bot detection (Cloudflare, DataDome). Default: 'lite'"
+        "Browser mode. MUST use 'stealth' for anti-bot sites: reddit.com, tiktok.com, " +
+          "xiaohongshu.com, instagram.com, google.com/travel/flights, kayak.com, airbnb.com, " +
+          "booking.com, airline sites, tabelog.com, naver, rakuten.co.jp, jalan.net. Default: 'lite'"
       ),
   }),
   func: async ({ url, goal, browser_profile }) => {
