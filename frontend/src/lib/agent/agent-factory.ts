@@ -54,6 +54,62 @@ const webSearchTool = new DynamicStructuredTool({
   },
 });
 
+// --- Structured output schema ---
+const RatingSchema = z.object({
+  score: z.number().nullable().describe("Rating score e.g. 4.5 out of 5, or null if not found"),
+  review_count: z.number().nullable().describe("Number of reviews, or null if not found"),
+  url: z.string().nullable().describe("Actual URL to the rating page, or null"),
+});
+
+const SocialCommentSchema = z.object({
+  text: z.string().describe("Exact verbatim quote from a real person"),
+  source: z.string().describe("Where you found it, e.g. Reddit r/travel, TripAdvisor, TikTok"),
+  author: z.string().describe("Real username e.g. u/username, @handle"),
+  upvotes: z.number().optional().describe("Upvote count if available"),
+  date: z.string().optional().describe("Date if available, e.g. 2025-12"),
+});
+
+const LocationImageSchema = z.object({
+  url: z.string().describe("Real image URL found in search results"),
+  source: z.string().describe("Where you found the image"),
+});
+
+const LocationSchema = z.object({
+  name: z.string().describe("Location name"),
+  category: z.enum(["surf", "food", "temple", "beach", "nightlife", "nature", "shopping"]).describe("Location category"),
+  summary: z.string().describe("One line — why go or why skip"),
+  ratings: z.object({
+    google: RatingSchema,
+    tripadvisor: RatingSchema,
+  }),
+  social_comments: z.array(SocialCommentSchema).describe("Real comments from real people. Never fabricate."),
+  images: z.array(LocationImageSchema).describe("Real image URLs. Never use example.com or fake URLs."),
+  best_time: z.string().describe("When to visit"),
+  warnings: z.array(z.string()).describe("Real warnings: construction, scams, crowds, closures"),
+  opening_hours: z.string().nullable().describe("Opening hours or null"),
+  entry_price: z.string().nullable().describe("Entry price or null"),
+  coordinates: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }),
+  source_count: z.number().describe("Total number of reviews/comments analyzed for this location"),
+});
+
+const DiscoveryResultSchema = z.object({
+  locations: z.array(LocationSchema).min(5).describe("Minimum 5 locations covering all user interests"),
+});
+
+const submitDiscoveryResultTool = new DynamicStructuredTool({
+  name: "submit_discovery_result",
+  description:
+    "Submit the final discovery results. You MUST call this tool as your final action " +
+    "with all the locations you found. This ensures the output is properly structured.",
+  schema: DiscoveryResultSchema,
+  func: async (input) => {
+    return JSON.stringify(input.locations);
+  },
+});
+
 const tinyfishRunTool = new DynamicStructuredTool({
   name: "tinyfish_web_automation",
   description:
@@ -155,7 +211,7 @@ export function createTinyfishAgent(options: CreateAgentOptions = {}) {
 
   const agent = createReactAgent({
     llm,
-    tools: [webSearchTool, tinyfishRunTool, ...tools],
+    tools: [webSearchTool, tinyfishRunTool, submitDiscoveryResultTool, ...tools],
     ...(prompt ? { prompt } : {}),
   });
 
@@ -164,6 +220,17 @@ export function createTinyfishAgent(options: CreateAgentOptions = {}) {
       messages: [{ role: "user", content: userMessage }],
     });
 
+    // Look for submit_discovery_result tool output in messages (walk backwards)
+    for (let i = result.messages.length - 1; i >= 0; i--) {
+      const msg = result.messages[i];
+      if (msg.name === "submit_discovery_result" && msg.content) {
+        return typeof msg.content === "string"
+          ? msg.content
+          : JSON.stringify(msg.content);
+      }
+    }
+
+    // Fallback to last message if no structured result found
     const lastMessage = result.messages[result.messages.length - 1];
     return typeof lastMessage.content === "string"
       ? lastMessage.content
