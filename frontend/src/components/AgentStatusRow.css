@@ -24,7 +24,7 @@
 .agent-spinner {
   width: 16px;
   height: 16px;
-  border: 2.5px solid var(--color-primary);
+  border: 2.5px solid var(--color-accent);
   border-top-color: transparent;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -85,7 +85,7 @@
 .agent-message {
   font-size: 11px;
   margin-top: 1px;
-  color: var(--color-primary);
+  color: var(--color-accent);
 }
 
 .agent-message--done {

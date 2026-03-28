@@ -52,7 +52,7 @@
 }
 
 .lp-budget-fill {
-  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  background: var(--color-accent);
   height: 6px;
   border-radius: 3px;
   transition: width 0.3s ease;
@@ -65,7 +65,7 @@
 }
 
 .lp-budget-remaining {
-  color: var(--color-primary);
+  color: var(--color-accent);
   font-weight: 600;
 }
 

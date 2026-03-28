@@ -10,11 +10,11 @@
 
 .flight-card:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 2px 8px rgba(67, 97, 238, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .flight-card--badge {
-  border: 2px solid var(--color-primary);
+  border: 2px solid var(--color-accent);
   background: var(--color-primary-bg);
 }
 
@@ -30,7 +30,7 @@
 }
 
 .flight-badge--best-value {
-  background: var(--color-primary);
+  background: var(--color-accent);
 }
 
 .flight-badge--premium {
@@ -81,7 +81,7 @@
 }
 
 .flight-price--highlight {
-  color: var(--color-primary);
+  color: var(--color-accent);
 }
 
 .flight-currency {
@@ -101,7 +101,7 @@
 }
 
 .flight-card--badge .flight-timeline {
-  border-top-color: #e0e0ff;
+  border-top-color: var(--color-border);
 }
 
 .flight-time {
@@ -117,7 +117,7 @@
 }
 
 .flight-card--badge .flight-line {
-  background: #c7d2fe;
+  background: var(--color-border);
 }
 
 .flight-duration {
@@ -144,5 +144,5 @@
 }
 
 .flight-card--badge .flight-source {
-  color: var(--color-primary);
+  color: var(--color-accent);
 }

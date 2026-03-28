@@ -29,10 +29,10 @@
 
 .trip-node--active:not(.trip-node--destination) {
   background: linear-gradient(90deg, var(--color-primary-light), transparent);
-  border-left: 3px solid var(--color-primary);
+  border-left: 3px solid var(--color-accent);
   margin-left: 15px;
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--color-text);
 }
 
 .trip-node--decided:not(.trip-node--destination) {
@@ -56,7 +56,7 @@
 }
 
 .node-active-dot {
-  color: var(--color-primary);
+  color: var(--color-accent);
   font-size: 10px;
 }
 

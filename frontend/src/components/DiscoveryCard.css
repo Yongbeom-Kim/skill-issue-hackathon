@@ -8,8 +8,8 @@
 }
 
 .disc-card:hover {
-  border-color: var(--color-primary);
-  box-shadow: 0 2px 12px rgba(67, 97, 238, 0.15);
+  border-color: var(--color-text-muted);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .disc-image {

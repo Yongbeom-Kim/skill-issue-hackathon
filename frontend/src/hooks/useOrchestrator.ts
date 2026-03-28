@@ -69,9 +69,11 @@ export function useOrchestrator() {
     if (!orchestratorRef.current) {
       orchestratorRef.current = createTripPlannerOrchestrator({
         onUpdateDecisionTree: (input) => {
+          console.log("[update_decision_tree]", input);
           setTripPlan((prev) => applyTreeUpdate(prev, input));
         },
         onUpdateRealtimeView: (input) => {
+          console.log("[update_realtime_view]", input);
           setLiveView(applyViewUpdate(input));
         },
       });
@@ -96,7 +98,9 @@ export function useOrchestrator() {
       setIsRunning(true);
       try {
         const orchestrator = getOrchestrator();
+        console.log("[orchestrator] sending:", message);
         const response = await orchestrator(message);
+        console.log("[orchestrator] response:", response);
 
         setChatMessages((prev) => [
           ...prev,
@@ -104,6 +108,17 @@ export function useOrchestrator() {
             id: crypto.randomUUID(),
             role: "assistant" as const,
             content: response,
+            timestamp: Date.now(),
+          },
+        ]);
+      } catch (err) {
+        console.error("[orchestrator] error:", err);
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant" as const,
+            content: `Error: ${err instanceof Error ? err.message : String(err)}`,
             timestamp: Date.now(),
           },
         ]);

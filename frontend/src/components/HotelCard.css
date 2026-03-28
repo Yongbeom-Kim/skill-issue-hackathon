@@ -9,19 +9,19 @@
 }
 
 .hotel-card:hover {
-  border-color: var(--color-primary);
-  box-shadow: 0 2px 12px rgba(67, 97, 238, 0.12);
+  border-color: var(--color-text-muted);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .hotel-card--badge {
-  border: 2px solid var(--color-primary);
+  border: 2px solid var(--color-accent);
 }
 
 .hotel-badge {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: var(--color-primary);
+  background: var(--color-accent);
   color: #fff;
   font-size: 9px;
   padding: 2px 8px;
@@ -56,7 +56,7 @@
 .hotel-price {
   font-size: 18px;
   font-weight: 800;
-  color: var(--color-primary);
+  color: var(--color-accent);
   flex-shrink: 0;
 }
 

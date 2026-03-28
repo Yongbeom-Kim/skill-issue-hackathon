@@ -70,13 +70,59 @@
   color: var(--color-text);
 }
 
+.chat-narrative ul,
+.chat-narrative ol {
+  font-size: 15px;
+  line-height: 2;
+  color: #333;
+  margin-bottom: 20px;
+  padding-left: 24px;
+}
+
+.chat-narrative li {
+  margin-bottom: 4px;
+}
+
+.chat-narrative code {
+  background: var(--color-bg-input);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.chat-narrative pre {
+  background: var(--color-bg-input);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.chat-narrative blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 14px;
+  margin: 0 0 20px 0;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.chat-narrative a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.chat-narrative a:hover {
+  text-decoration: underline;
+}
+
 /* Community insight box */
 .chat-narrative .chat-insight {
   background: var(--color-primary-bg);
   border-radius: var(--radius-lg);
   padding: 14px 18px;
   margin-bottom: 24px;
-  border-left: 3px solid var(--color-primary);
+  border-left: 3px solid var(--color-accent);
   font-size: 13px;
   line-height: 1.7;
   color: var(--color-text-secondary);
@@ -84,7 +130,7 @@
 
 .chat-narrative .chat-insight-title {
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-accent);
   margin-bottom: 6px;
 }
 
@@ -161,4 +207,52 @@
 
 .chat-send:hover {
   opacity: 0.8;
+}
+
+.chat-send:disabled,
+.chat-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* User message bubble */
+.chat-user-bubble {
+  background: var(--color-bg-input);
+  color: var(--color-text);
+  padding: 10px 16px;
+  border-radius: 16px 16px 4px 16px;
+  margin-bottom: 16px;
+  margin-left: auto;
+  max-width: 80%;
+  width: fit-content;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Thinking indicator */
+.chat-thinking {
+  display: flex;
+  gap: 4px;
+  padding: 12px 0;
+}
+
+.chat-thinking-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--color-text-muted);
+  border-radius: 50%;
+  animation: chat-bounce 1.4s ease-in-out infinite;
+}
+
+.chat-thinking-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.chat-thinking-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes chat-bounce {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
 }
