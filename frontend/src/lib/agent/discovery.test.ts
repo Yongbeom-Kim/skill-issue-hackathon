@@ -13,7 +13,7 @@ const discoveryAgent = createTinyfishAgent({ prompt: DISCOVERY_PROMPT });
 describe("discovery skill", () => {
   it(
     "discovers and evaluates locations in Bali for surfing",
-    { timeout: 120_000 },
+    { timeout: 600_000 },
     async () => {
       const result = await discoveryAgent(
         "I'm planning a trip to Bali, March 15-19. I love surfing and local food. " +

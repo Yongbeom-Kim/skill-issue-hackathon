@@ -7,6 +7,7 @@ import { z } from "zod";
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 const TINYFISH_API_KEY = import.meta.env.VITE_TINYFISH_API_KEY;
 const TINYFISH_BASE_URL = "https://agent.tinyfish.ai/v1";
+const WEB_SEARCH_ONLY = import.meta.env.VITE_WEB_SEARCH_ONLY === "true";
 
 /**
  * Domains that require stealth browser_profile due to anti-bot protection,
@@ -112,7 +113,7 @@ const LocationSchema = z.object({
     tripadvisor: RatingSchema,
   }),
   social_comments: z.array(SocialCommentSchema).describe("Real comments from real people. Never fabricate."),
-  images: z.array(LocationImageSchema).describe("Real image URLs. Never use example.com or fake URLs."),
+  images: z.array(LocationImageSchema).default([]).describe("Leave empty — images are added separately."),
   best_time: z.string().describe("When to visit"),
   warnings: z.array(z.string()).describe("Real warnings: construction, scams, crowds, closures"),
   opening_hours: z.string().nullable().describe("Opening hours or null"),
@@ -139,95 +140,82 @@ const submitDiscoveryResultTool = new DynamicStructuredTool({
   },
 });
 
+// --- Shared TinyFish async+poll helper ---
+async function runTinyfish(url: string, goal: string, browser_profile = "lite"): Promise<string> {
+  const startRes = await fetch(`${TINYFISH_BASE_URL}/automation/run-async`, {
+    method: "POST",
+    headers: {
+      "X-API-Key": TINYFISH_API_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ url, goal, browser_profile }),
+  });
+
+  if (!startRes.ok) {
+    return JSON.stringify({ error: `TinyFish API error: ${startRes.status}` });
+  }
+
+  const startBody = await startRes.json();
+  const runId = startBody.run_id;
+  if (!runId) {
+    return JSON.stringify({ error: "No run_id returned", details: startBody });
+  }
+
+  const maxAttempts = 24;
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise((r) => setTimeout(r, 5_000));
+    const pollRes = await fetch(`${TINYFISH_BASE_URL}/runs/${runId}`, {
+      headers: { "X-API-Key": TINYFISH_API_KEY },
+    });
+    if (!pollRes.ok) continue;
+    const pollBody = await pollRes.json();
+    if (pollBody.status === "COMPLETED") {
+      return JSON.stringify(pollBody.resultJson ?? pollBody.result ?? pollBody);
+    }
+    if (pollBody.status === "FAILED") {
+      return JSON.stringify({ error: pollBody.message || "TinyFish run failed" });
+    }
+  }
+  return JSON.stringify({ error: "TinyFish run timed out after 2 minutes" });
+}
+
+// --- Single TinyFish call tool ---
 const tinyfishRunTool = new DynamicStructuredTool({
   name: "tinyfish_web_automation",
   description:
-    "Run a browser automation task using TinyFish. Send a URL and a natural-language goal, " +
-    "and get back structured JSON extracted from the page. Handles real browser navigation, " +
-    "form filling, dynamic content, and anti-bot detection. " +
-    "IMPORTANT: Use browser_profile='stealth' for these domains (they have anti-bot/JS walls): " +
-    "reddit.com, tiktok.com, xiaohongshu.com, instagram.com, google.com/travel/flights, " +
-    "kayak.com, airbnb.com, booking.com, airline sites (delta.com, united.com, southwest.com, " +
-    "ryanair.com, aa.com), rakuten.co.jp, jalan.net, tabelog.com, blog.naver.com, map.naver.com.",
+    "Run a SINGLE browser automation task using TinyFish. " +
+    "For scraping multiple platforms at once, use scrape_multiple_platforms instead.",
   schema: z.object({
     url: z.string().describe("The starting URL for the browser agent"),
-    goal: z
-      .string()
-      .describe(
-        "Natural language instruction describing what to extract or do on the page. " +
-          "Include an output schema for best results, e.g. 'Extract pricing as JSON: [{\"name\": str, \"price\": str}]'"
-      ),
-    browser_profile: z
-      .enum(["lite", "stealth"])
-      .optional()
-      .default("lite")
-      .describe(
-        "Browser mode. MUST use 'stealth' for anti-bot sites: reddit.com, tiktok.com, " +
-          "xiaohongshu.com, instagram.com, google.com/travel/flights, kayak.com, airbnb.com, " +
-          "booking.com, airline sites, tabelog.com, naver, rakuten.co.jp, jalan.net. Default: 'lite'"
-      ),
+    goal: z.string().describe("Natural language instruction for the page"),
+    browser_profile: z.enum(["lite", "stealth"]).optional().default("lite"),
   }),
-  func: async ({ url, goal, browser_profile }) => {
-    const response = await fetch(`${TINYFISH_BASE_URL}/automation/run-sse`, {
-      method: "POST",
-      headers: {
-        "X-API-Key": TINYFISH_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ url, goal, browser_profile }),
-    });
+  func: async ({ url, goal, browser_profile }) => runTinyfish(url, goal, browser_profile),
+});
 
-    if (!response.ok) {
-      return JSON.stringify({
-        error: `TinyFish API error: ${response.status} ${response.statusText}`,
-      });
-    }
-
-    const reader = response.body?.getReader();
-    if (!reader) {
-      return JSON.stringify({ error: "No response body" });
-    }
-
-    const decoder = new TextDecoder();
-    let resultJson: unknown = null;
-    let lastMessage = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split("\n");
-
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        try {
-          const event = JSON.parse(line.slice(6));
-
-          if (event.type === "COMPLETE" && event.status === "COMPLETED") {
-            resultJson = event.resultJson;
-          }
-          if (event.type === "ERROR" || event.status === "FAILED") {
-            return JSON.stringify({
-              error: event.message || "TinyFish run failed",
-            });
-          }
-          if (event.message) {
-            lastMessage = event.message;
-          }
-        } catch {
-          // skip malformed lines
-        }
-      }
-    }
-
-    if (resultJson !== null) {
-      return JSON.stringify(resultJson);
-    }
-    return JSON.stringify({
-      error: "No result received",
-      lastMessage,
-    });
+// --- Parallel multi-platform scrape tool ---
+const scrapeMultiplePlatformsTool = new DynamicStructuredTool({
+  name: "scrape_multiple_platforms",
+  description:
+    "Scrape MULTIPLE websites IN PARALLEL using TinyFish. Much faster than calling tinyfish_web_automation multiple times. " +
+    "Use this to scrape TripAdvisor, Google Maps, Reddit, Xiaohongshu, etc. all at once. " +
+    "Each task runs as a separate browser agent simultaneously.",
+  schema: z.object({
+    tasks: z.array(z.object({
+      url: z.string().describe("The starting URL"),
+      goal: z.string().describe("What to extract from this site"),
+      browser_profile: z.enum(["lite", "stealth"]).optional().default("lite"),
+      label: z.string().describe("A label for this task, e.g. 'tripadvisor', 'reddit', 'google_maps'"),
+    })).describe("Array of scraping tasks to run in parallel"),
+  }),
+  func: async ({ tasks }) => {
+    const results = await Promise.all(
+      tasks.map(async (task) => {
+        const result = await runTinyfish(task.url, task.goal, task.browser_profile);
+        return { label: task.label, result: JSON.parse(result) };
+      })
+    );
+    return JSON.stringify(results);
   },
 });
 
@@ -246,7 +234,12 @@ export function createTinyfishAgent(options: CreateAgentOptions = {}) {
 
   const agent = createReactAgent({
     llm,
-    tools: [webSearchTool, tinyfishRunTool, submitDiscoveryResultTool, ...tools],
+    tools: [
+      webSearchTool,
+      ...(WEB_SEARCH_ONLY ? [webSearchTool, scrapeMultiplePlatformsTool] : [tinyfishRunTool, scrapeMultiplePlatformsTool]),
+      submitDiscoveryResultTool,
+      ...tools,
+    ],
     ...(prompt ? { prompt } : {}),
   });
 
