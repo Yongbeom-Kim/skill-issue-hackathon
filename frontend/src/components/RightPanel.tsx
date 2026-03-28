@@ -1,11 +1,17 @@
+import { useState, useEffect } from "react"
 import { useAtomValue } from "jotai"
 import { liveViewAtom } from "../atoms/liveView"
 import { AgentStatusRow } from "./AgentStatusRow"
 import { FlightCard } from "./FlightCard"
 import { HotelCard } from "./HotelCard"
 import { DiscoveryCard } from "./DiscoveryCard"
+import { DetailPanel } from "./DetailPanel"
 import { getSourceIcon } from "../lib/source-icons"
+import { cachedItemDetails } from "../lib/cached-scenario"
+import type { FlightOption, HotelOption, DiscoveryItem } from "../types"
 import "./RightPanel.css"
+
+type AnyItem = FlightOption | HotelOption | DiscoveryItem
 
 interface RightPanelProps {
   onSelectFlight: (flightId: string) => void
@@ -15,6 +21,34 @@ interface RightPanelProps {
 
 export function RightPanel({ onSelectFlight, onSelectHotel, onSelectDiscovery }: RightPanelProps) {
   const view = useAtomValue(liveViewAtom)
+  const [detailItem, setDetailItem] = useState<AnyItem | null>(null)
+
+  // Clear detail when the view changes (different node selected)
+  useEffect(() => {
+    setDetailItem(null)
+  }, [view.nodeId, view.phase])
+
+  // When detail is open, show DetailPanel
+  if (detailItem) {
+    const itemId = "id" in detailItem ? (detailItem as { id: string }).id : ""
+    const detail = cachedItemDetails[itemId] ?? null
+
+    const handleSelect = () => {
+      if ("airline" in detailItem) onSelectFlight(itemId)
+      else if ("pricePerNight" in detailItem) onSelectHotel(itemId)
+      else if ("place" in detailItem) onSelectDiscovery(itemId)
+      setDetailItem(null)
+    }
+
+    return (
+      <DetailPanel
+        item={detailItem}
+        detail={detail}
+        onSelect={handleSelect}
+        onBack={() => setDetailItem(null)}
+      />
+    )
+  }
 
   return (
     <>
@@ -109,7 +143,7 @@ export function RightPanel({ onSelectFlight, onSelectHotel, onSelectDiscovery }:
       {view.phase === "flights" && (
         <div className="rp-cards">
           {view.flights.map((flight) => (
-            <FlightCard key={flight.id} flight={flight} onSelect={onSelectFlight} />
+            <FlightCard key={flight.id} flight={flight} onSelect={() => setDetailItem(flight)} />
           ))}
         </div>
       )}
@@ -117,7 +151,7 @@ export function RightPanel({ onSelectFlight, onSelectHotel, onSelectDiscovery }:
       {view.phase === "hotels" && (
         <div className="rp-cards">
           {view.hotels.map((hotel) => (
-            <HotelCard key={hotel.id} hotel={hotel} onSelect={onSelectHotel} />
+            <HotelCard key={hotel.id} hotel={hotel} onSelect={() => setDetailItem(hotel)} />
           ))}
         </div>
       )}
@@ -125,7 +159,7 @@ export function RightPanel({ onSelectFlight, onSelectHotel, onSelectDiscovery }:
       {view.phase === "discovery" && (
         <div className="rp-cards">
           {view.discoveries.map((item) => (
-            <DiscoveryCard key={item.id} item={item} onSelect={onSelectDiscovery} />
+            <DiscoveryCard key={item.id} item={item} onSelect={() => setDetailItem(item)} />
           ))}
         </div>
       )}

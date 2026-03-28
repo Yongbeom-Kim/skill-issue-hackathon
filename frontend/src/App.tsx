@@ -6,9 +6,12 @@ import { LeftPanel } from "./components/LeftPanel"
 import { Chat } from "./components/Chat"
 import { RightPanel } from "./components/RightPanel"
 import { useOrchestrator } from "./hooks/useOrchestrator"
+import { useCachedOrchestrator } from "./hooks/useCachedOrchestrator"
+
+const USE_CACHE = import.meta.env.VITE_USE_CACHE === "true"
 import { tripPlanAtom } from "./atoms/tripPlan"
 import { chatMessagesAtom } from "./atoms/chat"
-import { liveViewAtom } from "./atoms/liveView"
+import { liveViewAtom, nodeResultCacheAtom } from "./atoms/liveView"
 import type { ViewPhase } from "./types"
 import {
   mockTripPlan,
@@ -47,9 +50,12 @@ function App() {
   const setTripPlan = useSetAtom(tripPlanAtom)
   const setChatMessages = useSetAtom(chatMessagesAtom)
   const setLiveView = useSetAtom(liveViewAtom)
+  const setNodeCache = useSetAtom(nodeResultCacheAtom)
   const liveView = useAtomValue(liveViewAtom)
 
-  const { run, isRunning } = useOrchestrator()
+  const liveOrchestrator = useOrchestrator()
+  const cachedOrchestrator = useCachedOrchestrator()
+  const { run, isRunning } = USE_CACHE ? cachedOrchestrator : liveOrchestrator
 
   // Load mock data in demo mode
   useEffect(() => {
@@ -64,7 +70,8 @@ function App() {
     setTripPlan({ id: crypto.randomUUID(), requirements: null, nodes: [] })
     setChatMessages([])
     setLiveView({ nodeId: "", phase: "empty", agents: [], flights: [], hotels: [], discoveries: [], decidedItem: null, title: "Explore", subtitle: "" })
-  }, [setTripPlan, setChatMessages, setLiveView])
+    setNodeCache({})
+  }, [setTripPlan, setChatMessages, setLiveView, setNodeCache])
 
   // ── Event handlers ──────────────────────────────────────
 

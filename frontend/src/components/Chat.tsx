@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useMemo } from "react"
 import { useAtomValue } from "jotai"
 import { marked } from "marked"
 import { chatMessagesAtom } from "../atoms/chat"
+import { agentActivityAtom } from "../atoms/agentActivity"
 import "./Chat.css"
 
 interface ChatProps {
@@ -9,8 +10,24 @@ interface ChatProps {
   isRunning?: boolean
 }
 
+const SOURCE_LABELS: Record<string, string> = {
+  orchestrator: "Planner",
+  research: "Research",
+  logistics: "Logistics",
+  tool: "Tool",
+}
+
+const TYPE_ICONS: Record<string, string> = {
+  thinking: "...",
+  tool_call: "->",
+  tool_result: "<-",
+  agent_dispatch: ">>",
+  error: "!!",
+}
+
 export function Chat({ onSendMessage, isRunning }: ChatProps) {
   const messages = useAtomValue(chatMessagesAtom)
+  const activity = useAtomValue(agentActivityAtom)
   const scrollRef = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState("")
 
@@ -24,12 +41,12 @@ export function Chat({ onSendMessage, isRunning }: ChatProps) {
     [messages]
   )
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll to bottom on new messages or activity
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [messages])
+  }, [messages, activity])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,10 +82,19 @@ export function Chat({ onSendMessage, isRunning }: ChatProps) {
           )
         )}
         {isRunning && (
-          <div className="chat-thinking">
-            <div className="chat-thinking-dot" />
-            <div className="chat-thinking-dot" />
-            <div className="chat-thinking-dot" />
+          <div className="chat-activity-log">
+            {activity.map((evt) => (
+              <div key={evt.id} className={`chat-activity-row chat-activity-${evt.type}`}>
+                <span className="chat-activity-icon">{TYPE_ICONS[evt.type] ?? "*"}</span>
+                <span className="chat-activity-source">{SOURCE_LABELS[evt.source] ?? evt.source}</span>
+                <span className="chat-activity-msg">{evt.message}</span>
+              </div>
+            ))}
+            <div className="chat-thinking">
+              <div className="chat-thinking-dot" />
+              <div className="chat-thinking-dot" />
+              <div className="chat-thinking-dot" />
+            </div>
           </div>
         )}
       </div>

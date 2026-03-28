@@ -169,6 +169,31 @@ export interface CommunityQuote {
   score?: number
 }
 
+// ── Detail View ──────────────────────────────────────────
+
+export interface BookingLink {
+  provider: string
+  url: string
+  price?: number
+  currency?: string
+  note?: string
+}
+
+export interface ItemDetail {
+  /** ID matching the item (FlightOption.id, HotelOption.id, DiscoveryItem.id) */
+  itemId: string
+  /** Extended community comments with full context */
+  comments: CommunityQuote[]
+  /** Booking / reference links */
+  bookingLinks: BookingLink[]
+  /** Price comparisons across sources */
+  priceComparisons?: { source: string; price: number; currency: string; url: string }[]
+  /** Longer description */
+  description?: string
+  /** Highlights / amenities / features */
+  highlights?: string[]
+}
+
 // ── Chat ───────────────────────────────────────────────────
 
 export interface ChatMessage {

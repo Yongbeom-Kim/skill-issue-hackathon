@@ -2,6 +2,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import type { StructuredToolInterface } from "@langchain/core/tools";
+import { HumanMessage, AIMessage, type BaseMessage } from "@langchain/core/messages";
 import { z } from "zod";
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
@@ -219,34 +220,84 @@ const scrapeMultiplePlatformsTool = new DynamicStructuredTool({
   },
 });
 
+export type ActivityCallback = (event: {
+  source: "orchestrator" | "research" | "logistics" | "tool";
+  type: "thinking" | "tool_call" | "tool_result" | "agent_dispatch" | "error";
+  message: string;
+}) => void;
+
 interface CreateAgentOptions {
   prompt?: string;
   tools?: StructuredToolInterface[];
+  onActivity?: ActivityCallback;
+  /** Label for this agent in activity logs */
+  agentName?: string;
 }
 
 export function createTinyfishAgent(options: CreateAgentOptions = {}) {
-  const { prompt, tools = [] } = options;
+  const { prompt, tools = [], onActivity, agentName = "orchestrator" } = options;
+
+  const emit = onActivity ?? (() => {});
+  const source = agentName as "orchestrator" | "research" | "logistics" | "tool";
 
   const llm = new ChatOpenAI({
     model: "gpt-4o",
     apiKey: OPENAI_API_KEY,
   });
 
+  // Wrap tools with activity logging
+  const allTools: StructuredToolInterface[] = [
+    webSearchTool,
+    ...(WEB_SEARCH_ONLY ? [webSearchTool, scrapeMultiplePlatformsTool] : [tinyfishRunTool, scrapeMultiplePlatformsTool]),
+    submitDiscoveryResultTool,
+    ...tools,
+  ];
+
+  const wrappedTools = allTools.map((tool) => {
+    const originalFunc = (tool as DynamicStructuredTool).func;
+    return new DynamicStructuredTool({
+      name: tool.name,
+      description: tool.description,
+      schema: (tool as DynamicStructuredTool).schema,
+      func: async (input, runManager) => {
+        // Emit tool_call event with a human-readable summary
+        const summary = toolCallSummary(tool.name, input);
+        emit({ source, type: "tool_call", message: summary });
+
+        const result = await originalFunc(input, runManager);
+
+        // Emit tool_result event
+        const resultSummary = toolResultSummary(tool.name, result);
+        emit({ source, type: "tool_result", message: resultSummary });
+
+        return result;
+      },
+    });
+  });
+
   const agent = createReactAgent({
     llm,
-    tools: [
-      webSearchTool,
-      ...(WEB_SEARCH_ONLY ? [webSearchTool, scrapeMultiplePlatformsTool] : [tinyfishRunTool, scrapeMultiplePlatformsTool]),
-      submitDiscoveryResultTool,
-      ...tools,
-    ],
+    tools: wrappedTools,
     ...(prompt ? { prompt } : {}),
   });
 
+  // Maintain conversation history across calls
+  const messageHistory: BaseMessage[] = [];
+
   return async (userMessage: string) => {
+    messageHistory.push(new HumanMessage(userMessage));
+    emit({ source, type: "thinking", message: "Processing your message..." });
+
     const result = await agent.invoke({
-      messages: [{ role: "user", content: userMessage }],
+      messages: [...messageHistory],
     });
+
+    // Extract the assistant's final text response to add to history
+    const lastMessage = result.messages[result.messages.length - 1];
+    const lastContent = typeof lastMessage.content === "string"
+      ? lastMessage.content
+      : JSON.stringify(lastMessage.content);
+    messageHistory.push(new AIMessage(lastContent));
 
     // Look for submit_discovery_result tool output in messages (walk backwards)
     for (let i = result.messages.length - 1; i >= 0; i--) {
@@ -258,12 +309,60 @@ export function createTinyfishAgent(options: CreateAgentOptions = {}) {
       }
     }
 
-    // Fallback to last message if no structured result found
-    const lastMessage = result.messages[result.messages.length - 1];
-    return typeof lastMessage.content === "string"
-      ? lastMessage.content
-      : JSON.stringify(lastMessage.content);
+    return lastContent;
   };
+}
+
+/** Generate a human-readable summary for a tool call */
+function toolCallSummary(toolName: string, input: Record<string, unknown>): string {
+  switch (toolName) {
+    case "web_search":
+      return `Searching: "${input.query}"`;
+    case "tinyfish_web_automation":
+      return `Browsing ${input.url} — ${input.goal}`;
+    case "scrape_multiple_platforms": {
+      const tasks = input.tasks as Array<{ label: string }>;
+      return `Scraping ${tasks.length} sites: ${tasks.map((t) => t.label).join(", ")}`;
+    }
+    case "call_research_agent":
+      return `Research agent: "${input.query}"`;
+    case "call_logistics_agent":
+      return `Logistics agent: "${input.query}"`;
+    case "update_decision_tree":
+      if (input.requirements) return "Setting trip requirements";
+      if (input.nodes) return "Building trip plan structure";
+      if (input.updateNode) return `Updating node: ${(input.updateNode as { nodeId: string }).nodeId}`;
+      return "Updating decision tree";
+    case "update_realtime_view":
+      return `Updating view: ${input.phase} — ${input.title}`;
+    case "submit_discovery_result":
+      return "Submitting discovery results";
+    default:
+      return `Calling ${toolName}`;
+  }
+}
+
+/** Generate a human-readable summary for a tool result */
+function toolResultSummary(toolName: string, result: string): string {
+  const len = result.length;
+  switch (toolName) {
+    case "web_search":
+      return `Search complete (${len > 1000 ? Math.round(len / 1000) + "k" : len} chars)`;
+    case "tinyfish_web_automation":
+      return "Browser task complete";
+    case "scrape_multiple_platforms":
+      return "All scraping tasks complete";
+    case "call_research_agent":
+      return `Research agent returned (${len > 1000 ? Math.round(len / 1000) + "k" : len} chars)`;
+    case "call_logistics_agent":
+      return `Logistics agent returned (${len > 1000 ? Math.round(len / 1000) + "k" : len} chars)`;
+    case "update_decision_tree":
+      return "Decision tree updated";
+    case "update_realtime_view":
+      return "View updated";
+    default:
+      return `${toolName} complete`;
+  }
 }
 
 // Default agent for backwards compatibility

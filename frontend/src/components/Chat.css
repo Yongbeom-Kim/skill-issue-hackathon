@@ -256,3 +256,53 @@
   0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
   40% { opacity: 1; transform: scale(1); }
 }
+
+/* Agent activity log */
+.chat-activity-log {
+  padding: 8px 0;
+  margin-bottom: 8px;
+}
+
+.chat-activity-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 12px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  line-height: 1.5;
+  animation: chat-activity-fade-in 0.2s ease-out;
+}
+
+@keyframes chat-activity-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-activity-icon {
+  color: var(--color-text-light);
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+.chat-activity-source {
+  color: var(--color-primary);
+  font-weight: 600;
+  flex-shrink: 0;
+  min-width: 70px;
+}
+
+.chat-activity-msg {
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-activity-tool_call .chat-activity-icon { color: #d97706; }
+.chat-activity-tool_result .chat-activity-icon { color: #22c55e; }
+.chat-activity-error .chat-activity-icon { color: #ef4444; }
+.chat-activity-error .chat-activity-msg { color: #ef4444; }
+.chat-activity-agent_dispatch .chat-activity-icon { color: #8b5cf6; }
+.chat-activity-thinking .chat-activity-msg { font-style: italic; }

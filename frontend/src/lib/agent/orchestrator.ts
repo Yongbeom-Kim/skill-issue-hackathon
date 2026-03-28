@@ -1,6 +1,6 @@
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
-import { createTinyfishAgent } from "./agent-factory";
+import { createTinyfishAgent, type ActivityCallback } from "./agent-factory";
 import { LOGISTICS_PROMPT } from "./prompts/logistics-agent";
 import { ORCHESTRATOR_PROMPT } from "./prompts/orchestrator-agent";
 import { RESEARCH_PROMPT } from "./prompts/research-agent";
@@ -131,9 +131,10 @@ const updateRealtimeViewSchema = z.object({
 
 // ── Orchestrator factory ──────────────────────────────────
 
-export function createTripPlannerOrchestrator(callbacks: OrchestratorCallbacks) {
-  const researchRunner = createTinyfishAgent({ prompt: RESEARCH_PROMPT });
-  const logisticsRunner = createTinyfishAgent({ prompt: LOGISTICS_PROMPT });
+export function createTripPlannerOrchestrator(callbacks: OrchestratorCallbacks & { onActivity?: ActivityCallback }) {
+  const onActivity = callbacks.onActivity;
+  const researchRunner = createTinyfishAgent({ prompt: RESEARCH_PROMPT, onActivity, agentName: "research" });
+  const logisticsRunner = createTinyfishAgent({ prompt: LOGISTICS_PROMPT, onActivity, agentName: "logistics" });
 
   const callResearchAgent = new DynamicStructuredTool({
     name: "call_research_agent",
@@ -211,5 +212,7 @@ export function createTripPlannerOrchestrator(callbacks: OrchestratorCallbacks) 
   return createTinyfishAgent({
     prompt: ORCHESTRATOR_PROMPT,
     tools: [callResearchAgent, callLogisticsAgent, updateDecisionTree, updateRealtimeView],
+    onActivity,
+    agentName: "orchestrator",
   });
 }
