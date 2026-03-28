@@ -8,6 +8,52 @@ const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 const TINYFISH_API_KEY = import.meta.env.VITE_TINYFISH_API_KEY;
 const TINYFISH_BASE_URL = "https://agent.tinyfish.ai/v1";
 
+const webSearchTool = new DynamicStructuredTool({
+  name: "web_search",
+  description:
+    "Fast web search using OpenAI. Use this for general information gathering — " +
+    "travel tips, reviews, recommendations, opening hours, prices. " +
+    "Much faster than tinyfish_web_automation. Use tinyfish only when you need to " +
+    "interact with a specific page (login, fill forms, navigate dynamic sites, scrape structured data from a specific URL).",
+  schema: z.object({
+    query: z.string().describe("The search query"),
+  }),
+  func: async ({ query }) => {
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        tools: [{ type: "web_search_preview" }],
+        input: query,
+      }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      return JSON.stringify({ error: `OpenAI search error: ${response.status}`, details: text });
+    }
+
+    const data = await response.json();
+    // Extract the text output from the response
+    const outputItems = data.output || [];
+    const textContent = outputItems
+      .filter((item: Record<string, string>) => item.type === "message")
+      .map((item: Record<string, unknown>) =>
+        ((item.content as Array<Record<string, string>>) || [])
+          .filter((c) => c.type === "output_text")
+          .map((c) => c.text)
+          .join("\n")
+      )
+      .join("\n");
+
+    return textContent || JSON.stringify(data);
+  },
+});
+
 const tinyfishRunTool = new DynamicStructuredTool({
   name: "tinyfish_web_automation",
   description:
@@ -109,7 +155,7 @@ export function createTinyfishAgent(options: CreateAgentOptions = {}) {
 
   const agent = createReactAgent({
     llm,
-    tools: [tinyfishRunTool, ...tools],
+    tools: [webSearchTool, tinyfishRunTool, ...tools],
     ...(prompt ? { prompt } : {}),
   });
 
