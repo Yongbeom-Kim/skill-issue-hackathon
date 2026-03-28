@@ -3,8 +3,8 @@ import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
 
-const OPENAI_API_KEY = "sk-REPLACE_ME_WITH_YOUR_OPENAI_API_KEY";
-const TINYFISH_API_KEY = "REPLACE_ME_WITH_YOUR_TINYFISH_API_KEY";
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+const TINYFISH_API_KEY = import.meta.env.VITE_TINYFISH_API_KEY;
 const TINYFISH_BASE_URL = "https://agent.tinyfish.ai/v1";
 
 const tinyfishRunTool = new DynamicStructuredTool({
