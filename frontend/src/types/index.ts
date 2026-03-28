@@ -110,3 +110,35 @@ export interface ChatMessage {
   content: string
   timestamp: number
 }
+
+// -- Tool Inputs ---------------------------------------------------------
+// These define what the orchestrator passes to each tool.
+// The orchestrator calls these tools to update the frontend state.
+
+/** Input for update_decision_tree tool — modifies left panel (tripPlanAtom) */
+export interface UpdateDecisionTreeInput {
+  /** Set/update user requirements. Pass on scaffold, or to update budgetRemaining. */
+  requirements?: UserRequirements
+  /** Replace entire node tree. Use for initial scaffold after requirements collected. */
+  nodes?: TripNode[]
+  /** Update a single node by ID. Use to mark active, decided, or change label. */
+  updateNode?: {
+    nodeId: string
+    status?: NodeStatus
+    label?: string
+    /** The chosen option (FlightOption, HotelOption, etc.) to store on this node */
+    decision?: FlightOption | HotelOption | DiscoveryItem | null
+    /** Cost in SGD. When status is "decided", this is deducted from budgetRemaining. */
+    cost?: number
+  }
+}
+
+/** Input for update_realtime_view tool — modifies right panel (liveViewAtom) */
+export interface UpdateRealtimeViewInput {
+  /** Current state of the view panel */
+  phase: "empty" | "loading" | "results"
+  /** Agents currently working. Show during loading phase. */
+  agents?: AgentStatus[]
+  /** Results to display as cards. Show during results phase. */
+  results?: ViewResult
+}
